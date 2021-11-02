@@ -469,7 +469,7 @@ class Skew(Operation):
         self.magnitude = magnitude
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Perform the skew on the passed image(s) and returns the transformed
         image(s). Uses the :attr:`skew_type` and :attr:`magnitude` parameters
@@ -489,6 +489,9 @@ class Skew(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
 
         # Width and height taken from first image in list.
         # This requires that all ground truth images in the list
@@ -615,7 +618,7 @@ class Skew(Operation):
             return image.transform(image.size,
                                    Image.PERSPECTIVE,
                                    perspective_skew_coefficients_matrix,
-                                   resample=self.resample_filter)
+                                   resample=resample_filter)
 
         augmented_images = []
 
@@ -646,7 +649,7 @@ class RotateStandard(Operation):
         self.fillcolor = fillcolor
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Documentation to appear.
 
@@ -654,6 +657,9 @@ class RotateStandard(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
 
         random_left = random.randint(self.max_left_rotation, 0)
         random_right = random.randint(0, self.max_right_rotation)
@@ -668,7 +674,7 @@ class RotateStandard(Operation):
             rotation = random_right
 
         def do(image):
-            return image.rotate(rotation, expand=self.expand, resample=self.resample_filter, fillcolor=self.fillcolor)
+            return image.rotate(rotation, expand=self.expand, resample=resample_filter, fillcolor=self.fillcolor)
 
         augmented_images = []
 
@@ -783,7 +789,7 @@ class RotateRange(Operation):
         self.max_right_rotation = abs(max_right_rotation)  # Ensure always positive
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Perform the rotation on the passed :attr:`image` and return
         the transformed image. Uses the :attr:`max_left_rotation` and
@@ -796,6 +802,9 @@ class RotateRange(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
 
         # TODO: Small rotations of 1 or 2 degrees can create black pixels
         random_left = random.randint(self.max_left_rotation, 0)
@@ -816,7 +825,7 @@ class RotateRange(Operation):
             y = image.size[1]
 
             # Rotate, while expanding the canvas size
-            image = image.rotate(rotation, expand=True, resample=self.resample_filter)
+            image = image.rotate(rotation, expand=True, resample=resample_filter)
 
             # Get size after rotation, which includes the empty space
             X = image.size[0]
@@ -846,7 +855,7 @@ class RotateRange(Operation):
             image = image.crop((int(round(E)), int(round(A)), int(round(X - E)), int(round(Y - A))))
 
             # Return the image, re-sized to the size of the image passed originally
-            return image.resize((x, y), resample=self.resample_filter)
+            return image.resize((x, y), resample=resample_filter)
 
         augmented_images = []
 
@@ -882,7 +891,7 @@ class Resize(Operation):
         self.height = height
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Resize the passed image and returns the resized image. Uses the
         parameters passed to the constructor to resize the passed image.
@@ -893,9 +902,12 @@ class Resize(Operation):
          PIL.Image.
         """
 
+        if resample_filter is None:
+            resample_filter = self.resample_filter
+
         def do(image):
             # TODO: Automatically change this to ANTIALIAS or BICUBIC depending on the size of the file
-            return image.resize((self.width, self.height), eval("Image.%s" % self.resample_filter))
+            return image.resize((self.width, self.height), eval("Image.%s" % resample_filter))
 
         augmented_images = []
 
@@ -1178,7 +1190,7 @@ class Shear(Operation):
         self.max_shear_right = max_shear_right
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Shears the passed image according to the parameters defined during
         instantiation, and returns the sheared image.
@@ -1204,6 +1216,9 @@ class Shear(Operation):
         #     warnings.simplefilter("ignore")
         #     return Image.fromarray(img_as_ubyte(image_sheared))
         ######################################################################
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
 
         width, height = images[0].size
 
@@ -1268,11 +1283,11 @@ class Shear(Operation):
                 image = image.transform((int(round(width + shift_in_pixels)), height),
                                         Image.AFFINE,
                                         transform_matrix,
-                                        self.resample_filter)
+                                        resample_filter)
 
                 image = image.crop((abs(shift_in_pixels), 0, width, height))
 
-                return image.resize((width, height), resample=self.resample_filter)
+                return image.resize((width, height), resample=resample_filter)
 
             elif direction == "y":
                 shift_in_pixels = phi * width
@@ -1289,11 +1304,11 @@ class Shear(Operation):
                 image = image.transform((width, int(round(height + shift_in_pixels))),
                                         Image.AFFINE,
                                         transform_matrix,
-                                        resample=self.resample_filter)
+                                        resample=resample_filter)
 
                 image = image.crop((0, abs(shift_in_pixels), width, height))
 
-                return image.resize((width, height), resample=self.resample_filter)
+                return image.resize((width, height), resample=resample_filter)
 
         augmented_images = []
 
@@ -1330,7 +1345,7 @@ class Scale(Operation):
         self.scale_factor = scale_factor
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Scale the passed :attr:`images` by the factor specified during
         instantiation, returning the scaled image.
@@ -1341,13 +1356,16 @@ class Scale(Operation):
          PIL.Image.
         """
 
+        if resample_filter is None:
+            resample_filter = self.resample_filter
+
         def do(image):
             w, h = image.size
 
             new_h = int(h * self.scale_factor)
             new_w = int(w * self.scale_factor)
 
-            return image.resize((new_w, new_h), resample=self.resample_filter)
+            return image.resize((new_w, new_h), resample=resample_filter)
 
         augmented_images = []
 
@@ -1392,7 +1410,7 @@ class Distort(Operation):
         self.randomise_magnitude = True
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Distorts the passed image(s) according to the parameters supplied during
         instantiation, returning the newly distorted image.
@@ -1402,6 +1420,9 @@ class Distort(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
 
         w, h = images[0].size
 
@@ -1492,7 +1513,7 @@ class Distort(Operation):
 
         def do(image):
 
-            return image.transform(image.size, Image.MESH, generated_mesh, resample=self.resample_filter)
+            return image.transform(image.size, Image.MESH, generated_mesh, resample=resample_filter)
 
         augmented_images = []
 
@@ -1568,7 +1589,7 @@ class GaussianDistortion(Operation):
         self.sdy = sdy
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Distorts the passed image(s) according to the parameters supplied
         during instantiation, returning the newly distorted image.
@@ -1578,6 +1599,10 @@ class GaussianDistortion(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
+
         w, h = images[0].size
 
         horizontal_tiles = self.grid_width
@@ -1693,7 +1718,7 @@ class GaussianDistortion(Operation):
             for i in range(len(dimensions)):
                 generated_mesh.append([dimensions[i], polygons[i]])
 
-            return image.transform(image.size, Image.MESH, generated_mesh, resample=self.resample_filter)
+            return image.transform(image.size, Image.MESH, generated_mesh, resample=resample_filter)
 
         augmented_images = []
 
@@ -1731,7 +1756,7 @@ class Zoom(Operation):
         self.max_factor = max_factor
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Zooms/scales the passed image(s) and returns the new image.
 
@@ -1740,6 +1765,10 @@ class Zoom(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
+
         factor = round(random.uniform(self.min_factor, self.max_factor), 2)
 
         def do(image):
@@ -1747,7 +1776,7 @@ class Zoom(Operation):
 
             image_zoomed = image.resize((int(round(image.size[0] * factor)),
                                          int(round(image.size[1] * factor))),
-                                         resample=self.resample_filter)
+                                         resample=resample_filter)
             w_zoomed, h_zoomed = image_zoomed.size
 
             return image_zoomed.crop((floor((float(w_zoomed) / 2) - (float(w) / 2)),
@@ -1789,7 +1818,7 @@ class ZoomRandom(Operation):
         self.randomise = randomise
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Randomly zoom into the passed :attr:`images` by first cropping the image
         based on the :attr:`percentage_area` argument, and then resizing the
@@ -1802,6 +1831,9 @@ class ZoomRandom(Operation):
         :return: The transformed image(s) as a list of object(s) of type
          PIL.Image.
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
 
         if self.randomise:
             r_percentage_area = round(random.uniform(0.1, self.percentage_area), 2)
@@ -1818,7 +1850,7 @@ class ZoomRandom(Operation):
         def do(image):
             image = image.crop((random_left_shift, random_down_shift, w_new + random_left_shift, h_new + random_down_shift))
 
-            return image.resize((w, h), resample=self.resample_filter)
+            return image.resize((w, h), resample=resample_filter)
 
         augmented_images = []
 
@@ -2009,7 +2041,7 @@ class ZoomGroundTruth(Operation):
         self.max_factor = max_factor
         self.resample_filter = resample_filter
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Zooms/scales the passed images and returns the new images.
 
@@ -2017,6 +2049,10 @@ class ZoomGroundTruth(Operation):
         :type images: List containing PIL.Image object(s).
         :return: The zoomed in image(s) as a list of PIL.Image object(s).
         """
+
+        if resample_filter is None:
+            resample_filter = self.resample_filter
+
         factor = round(random.uniform(self.min_factor, self.max_factor), 2)
 
         def do(image):
@@ -2024,7 +2060,7 @@ class ZoomGroundTruth(Operation):
             w, h = image.size
 
             # TODO: Join these two functions together so that we don't have this image_zoom variable lying around.
-            image_zoomed = image.resize((int(round(image.size[0] * factor)), int(round(image.size[1] * factor))), resample=self.resample_filter)
+            image_zoomed = image.resize((int(round(image.size[0] * factor)), int(round(image.size[1] * factor))), resample=resample_filter)
             w_zoomed, h_zoomed = image_zoomed.size
 
             return image_zoomed.crop((floor((float(w_zoomed) / 2) - (float(w) / 2)),
