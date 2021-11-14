@@ -73,7 +73,7 @@ class Operation(object):
         """
         return self.__class__.__name__
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Perform the operation on the passed images. Each operation must at least
         have this function, which accepts a list containing objects of type
@@ -104,7 +104,7 @@ class HistogramEqualisation(Operation):
         """
         Operation.__init__(self, probability)
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Performs histogram equalisation on the images passed as an argument
         and returns the equalised images. There are no user definable
@@ -151,7 +151,7 @@ class Greyscale(Operation):
         """
         Operation.__init__(self, probability)
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Converts the passed image to greyscale and returns the transformed
         image. There are no user definable parameters for this method.
@@ -189,7 +189,7 @@ class Invert(Operation):
         """
         Operation.__init__(self, probability)
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Negates the image passed as an argument. There are no user definable
         parameters for this method.
@@ -238,7 +238,7 @@ class BlackAndWhite(Operation):
         Operation.__init__(self, probability)
         self.threshold = threshold
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Convert the image passed as an argument to black and white, 1-bit
         monochrome. Uses the :attr:`threshold` passed to the constructor
@@ -293,7 +293,7 @@ class RandomBrightness(Operation):
         self.min_factor = min_factor
         self.max_factor = max_factor
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Random change the passed image brightness.
 
@@ -344,7 +344,7 @@ class RandomColor(Operation):
         self.min_factor = min_factor
         self.max_factor = max_factor
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Random change the passed image saturation.
 
@@ -395,7 +395,7 @@ class RandomContrast(Operation):
         self.min_factor = min_factor
         self.max_factor = max_factor
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Random change the passed image contrast.
 
@@ -716,7 +716,7 @@ class Rotate(Operation):
     def __str__(self):
         return "Rotate " + str(self.rotation)
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Rotate an image by either 90, 180, or 270 degrees, or randomly from
         any of these.
@@ -943,7 +943,7 @@ class Flip(Operation):
         Operation.__init__(self, probability)
         self.top_bottom_left_right = top_bottom_left_right
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Mirror the image according to the `attr`:top_bottom_left_right`
         argument passed to the constructor and return the mirrored image.
@@ -1005,7 +1005,7 @@ class Crop(Operation):
         self.height = height
         self.centre = centre
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Crop an area from an image, either from a random location or centred,
         using the dimensions supplied during instantiation.
@@ -1068,7 +1068,7 @@ class CropPercentage(Operation):
         self.centre = centre
         self.randomise_percentage_area = randomise_percentage_area
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Crop the passed :attr:`images` by percentage area, returning the crop as an
         image.
@@ -1124,7 +1124,7 @@ class CropRandom(Operation):
         Operation.__init__(self, probability)
         self.percentage_area = percentage_area
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Randomly crop the passed image, returning the crop as a new image.
 
@@ -1872,7 +1872,7 @@ class HSVShifting(Operation):
         self.value_scale = value_scale
         self.value_shift = value_shift
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
 
         def do(image):
             hsv = np.array(image.convert("HSV"), 'float64')
@@ -1923,7 +1923,7 @@ class RandomErasing(Operation):
         Operation.__init__(self, probability)
         self.rectangle_area = rectangle_area
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Adds a random noise rectangle to a random area of the passed image,
         returning the original image with this rectangle superimposed.
@@ -2001,7 +2001,7 @@ class Custom(Operation):
     def __str__(self):
         return "Custom (" + self.custom_function.__name__ + ")"
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         Perform the custom operation on the passed image(s), returning the
         transformed image(s).
@@ -2135,7 +2135,7 @@ class Mixup(Operation):
         Operation.__init__(self, probability)
         self.alpha = alpha
 
-    def perform_operation(self, images):
+    def perform_operation(self, images, resample_filter=None):
         """
         This function is currently implemented but not **enabled**, as it
         requires each image's label in order to operate - something which
